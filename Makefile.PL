@@ -12,10 +12,10 @@ WriteMakefile(
     VERSION_FROM    => "lib/Test/LongString.pm",
     PREREQ_PM	    => {
 	'Test::Builder'		=> 0.12,
-	'Test::Builder::Tester'	=> 0.09,
+	'Test::Builder::Tester'	=> 1.00,
     },
     dist	    => {
-	PREOP	    => 'svn log -r HEAD:1 > ${DISTVNAME}/Changes',
+	PREOP	    => 'svn log -r HEAD:1 > $(DISTVNAME)/Changes',
 	CI	    => 'svn commit',
 	RCS_LABEL   => '@ :',
     },

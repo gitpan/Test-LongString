@@ -3,7 +3,7 @@ package Test::LongString;
 use strict;
 use vars qw($VERSION @ISA @EXPORT $Max);
 
-$VERSION = 0.05;
+$VERSION = 0.06;
 
 use Test::Builder;
 my $Tester = new Test::Builder();
