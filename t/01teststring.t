@@ -2,7 +2,7 @@
 
 use strict;
 
-use Test::More tests => 6;
+use Test::More tests => 7;
 use Test::Builder::Tester;
 use Test::Builder::Tester::Color;
 
@@ -48,4 +48,18 @@ is_string(
     "\0\1foo\nbar",
     "long binary strings",
 );
-test_test("expected undef, got small string");
+test_test("display of long strings and of control chars");
+
+test_out("not ok 1 - spelling");
+test_fail(6);
+test_diag(qq(         got: "Element"
+#       length: 7
+#     expected: "El\\x{e9}ment"
+#       length: 7
+#     strings begin to differ at char 3));
+is_string(
+    "Element",
+    "Elément",
+    "spelling",
+);
+test_test("Escape high-ascii chars");

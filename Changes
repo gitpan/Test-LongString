@@ -1,4 +1,9 @@
 ------------------------------------------------------------------------
+rev 54:  rafael | 2003-01-08 22:22:49 +0100 (Wed, 08 Jan 2003) | 2 lines
+
+Fix a bug on escaping high ASCII characters in diagnostics.
+
+------------------------------------------------------------------------
 rev 39:  rafael | 2002-12-10 00:42:11 +0100 (Tue, 10 Dec 2002) | 2 lines
 
 Initial version (0.01) of Test::LongString

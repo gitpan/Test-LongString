@@ -3,7 +3,7 @@ package Test::LongString;
 use strict;
 use vars qw($VERSION @ISA @EXPORT $Max);
 
-$VERSION = 0.01;
+$VERSION = 0.02;
 
 use Test::Builder;
 my $Tester = new Test::Builder();
@@ -27,7 +27,7 @@ sub display {
     else {
 	$s = qq("$s");
     }
-    $s =~ s/([\0-\037\200\377])/sprintf('\x{%02x}',ord $1)/eg;
+    $s =~ s/([\0-\037\200-\377])/sprintf('\x{%02x}',ord $1)/eg;
     return $s;
 }
 
@@ -116,6 +116,10 @@ It reports the lengths of the strings that have been compared.
 =item *
 
 It reports the length of the common prefix of the strings.
+
+=item *
+
+In the diagnostics, non-ASCII characters are escaped as C<\x{xx}>.
 
 =back
 
