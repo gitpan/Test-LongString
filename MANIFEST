@@ -7,6 +7,7 @@ t/01teststring.t
 t/02import.t
 t/03like.t
 t/04contains.t
+t/05lacks.t
 t/pod.t
 t/pod-coverage.t
 META.yml                                 Module meta-data (added by MakeMaker)

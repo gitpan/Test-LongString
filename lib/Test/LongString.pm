@@ -3,14 +3,14 @@ package Test::LongString;
 use strict;
 use vars qw($VERSION @ISA @EXPORT $Max);
 
-$VERSION = 0.06;
+$VERSION = 0.07;
 
 use Test::Builder;
 my $Tester = new Test::Builder();
 
 use Exporter;
 @ISA    = ('Exporter');
-@EXPORT = ('is_string','like_string','unlike_string','contains_string');
+@EXPORT = qw( is_string like_string unlike_string contains_string lacks_string );
 
 # Maximum string length displayed in diagnostics
 $Max = 50;
@@ -76,6 +76,32 @@ sub contains_string($$;$) {
             $Tester->diag(<<DIAG);
     searched: $g
   can't find: $e
+DIAG
+        }
+    }
+    return $ok;
+}
+
+sub lacks_string($$;$) {
+    my ($str,$sub,$name) = @_;
+
+    my $ok;
+    if (!defined $str) {
+        $Tester->ok($ok = 0, $name);
+        $Tester->diag("String to look in is undef");
+    } elsif (!defined $sub) {
+        $Tester->ok($ok = 0, $name);
+        $Tester->diag("String to look for is undef");
+    } else {
+        my $index = index($str, $sub);
+        $ok = ($index < 0);
+        $Tester->ok($ok, $name);
+        if (!$ok) {
+            my ($g, $e) = (_display($str), _display($sub));
+            $Tester->diag(<<DIAG);
+    searched: $g
+   and found: $e
+ at position: $index
 DIAG
         }
     }
@@ -232,7 +258,6 @@ print out the position where the regex failed to match.
     #          got: "To be, or not to be: that is the question:\x{0a}Whether"...
     #       length: 1490
     #     doesn't match '(?-xism:Romeo|Juliet|Mercutio|Tybalt)'
-    # Looks like you planned 4 tests but only ran 1.
 
 =head2 contains_string( $string, $substring [, $label ] )
 
@@ -245,7 +270,19 @@ expression search.
     #     Failed test (soliloquy.t at line 10)
     #         searched: "To be, or not to be: that is the question:\x{0a}Whether"...
     #   and can't find: "Romeo"
-    # Looks like you planned 4 tests but only ran 1.
+
+=head2 lacks_string( $string, $substring [, $label ] )
+
+C<lacks_string()> makes sure that I<$substring> does NOT exist in
+I<$string>.  It's the same as C<like_string()>, except that it's not a
+regular expression search.
+
+    lacks_string( $soliloquy, "slings" );
+
+    #     Failed test (soliloquy.t at line 10)
+    #         searched: "To be, or not to be: that is the question:\x{0a}Whether"...
+    #        and found: "slings"
+    #      at position: 147
 
 =head1 CONTROLLING OUTPUT
 
