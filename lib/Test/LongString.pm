@@ -3,7 +3,7 @@ package Test::LongString;
 use strict;
 use vars qw($VERSION @ISA @EXPORT $Max);
 
-$VERSION = 0.03;
+$VERSION = 0.04;
 
 use Test::Builder;
 my $Tester = new Test::Builder();
@@ -118,10 +118,10 @@ sub _like {
 	my $g = display($got);
 	my $match = $cmp eq '=~' ? "doesn't match" : "matches";
 	my $l = defined $got ? length $got : '-';
-	$Tester->diag(sprintf(<<DIAGNOSTIC, $match));
-         got: $g
+	$Tester->diag(sprintf(<<DIAGNOSTIC, $g, $match, $regex));
+         got: %s
       length: $l
-    %13s '$regex'
+    %13s '%s'
 DIAGNOSTIC
     }
     return $ok;
