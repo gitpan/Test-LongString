@@ -4,3 +4,6 @@ MANIFEST
 MANIFEST.SKIP
 README
 t/01teststring.t
+t/02import.t
+t/03like.t
+META.yml                                 Module meta-data (added by MakeMaker)
