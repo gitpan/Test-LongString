@@ -3,14 +3,14 @@ package Test::LongString;
 use strict;
 use vars qw($VERSION @ISA @EXPORT $Max);
 
-$VERSION = 0.04;
+$VERSION = 0.05;
 
 use Test::Builder;
 my $Tester = new Test::Builder();
 
 use Exporter;
 @ISA    = ('Exporter');
-@EXPORT = ('is_string','like_string','unlike_string');
+@EXPORT = ('is_string','like_string','unlike_string','contains_string');
 
 # Maximum string length displayed in diagnostics
 $Max = 50;
@@ -25,7 +25,7 @@ sub import {
 # Formats a string for display.
 # This function ought to be configurable, à la od(1).
 
-sub display {
+sub _display {
     my $s = shift;
     if (!defined $s) { return 'undef'; }
     if (length($s) > $Max) {
@@ -39,7 +39,7 @@ sub display {
 }
 
 # I'm not too happy with this function. And you ?
-sub common_prefix_length {
+sub _common_prefix_length {
     my ($x, $y) = (shift, shift);
     my $r = 0;
     while (length($x) && length($y)) {
@@ -57,13 +57,38 @@ sub common_prefix_length {
     $r;
 }
 
+sub contains_string($$;$) {
+    my ($str,$sub,$name) = @_;
+
+    my $ok;
+    if (!defined $str) {
+        $Tester->ok($ok = 0, $name);
+        $Tester->diag("String to look in is undef");
+    } elsif (!defined $sub) {
+        $Tester->ok($ok = 0, $name);
+        $Tester->diag("String to look for is undef");
+    } else {
+        my $index = index($str, $sub);
+        $ok = ($index >= 0);
+        $Tester->ok($ok, $name);
+        if (!$ok) {
+            my ($g, $e) = (_display($str), _display($sub));
+            $Tester->diag(<<DIAG);
+    searched: $g
+  can't find: $e
+DIAG
+        }
+    }
+    return $ok;
+}
+
 sub is_string ($$;$) {
     my ($got, $expected, $name) = @_;
     if (!defined $got || !defined $expected) {
 	my $ok = !defined $got && !defined $expected;
 	$Tester->ok($ok, $name);
 	if (!$ok) {
-	    my ($g, $e) = (display($got), display($expected));
+	    my ($g, $e) = (_display($got), _display($expected));
 	    $Tester->diag(<<DIAG);
          got: $g
     expected: $e
@@ -77,13 +102,13 @@ DIAG
     }
     else {
 	$Tester->ok(0, $name);
-	my ($g, $e) = (display($got), display($expected));
+	my ($g, $e) = (_display($got), _display($expected));
 	$Tester->diag(<<DIAG);
          got: $g
       length: ${\(length $got)}
     expected: $e
       length: ${\(length $expected)}
-    strings begin to differ at char ${\(1+common_prefix_length($got,$expected))}
+    strings begin to differ at char ${\(1+_common_prefix_length($got,$expected))}
 DIAG
 	return 0;
     }
@@ -115,7 +140,7 @@ sub _like {
 	$ok = $Tester->ok( $test, $name );
     }
     unless( $ok ) {
-	my $g = display($got);
+	my $g = _display($got);
 	my $match = $cmp eq '=~' ? "doesn't match" : "matches";
 	my $l = defined $got ? length $got : '-';
 	$Tester->diag(sprintf(<<DIAGNOSTIC, $g, $match, $regex));
@@ -133,33 +158,39 @@ __END__
 
 =head1 NAME
 
-Test::LongString - tests strings for equality
+Test::LongString - tests strings for equality, with more helpful failures
 
 =head1 SYNOPSIS
 
     use Test::More tests => 1;
     use Test::LongString;
-    is_string('foobar','foobur');
+    like_string( $html, qr/(perl|cpan)\.org/ );
+
+    #     Failed test (html-test.t at line 12)
+    #          got: "<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Trans"...
+    #       length: 58930
+    #     doesn't match '(?-xism:(perl|cpan)\.org)'
 
 =head1 DESCRIPTION
 
-This module provides some drop-in replacements for the string comparison
-functions of L<Test::More>, but which are more suitable when you test against
-long strings.
+This module provides some drop-in replacements for the string
+comparison functions of L<Test::More>, but which are more suitable
+when you test against long strings.  If you've ever had to search
+for text in a multi-line string like an HTML document, or find
+specific items in binary data, this is the module for you.
 
-The function C<is_string()> basically equivalent to C<Test::More::is()>, but
-that gives more verbose diagnostics in case of failure.
+=head1 FUNCTIONS
+
+=head2 is_string( $string, $expected [, $label ] )
+
+C<is_string()> is equivalent to C<Test::More::is()>, but with more
+helpful diagnostics in case of failure.
 
 =over
 
 =item *
 
-It reports only the 50 first characters of the compared strings in the failure
-message, in case of long strings, so this doesn't clutter the test's output.
-This threshold value can be changed by setting C<$Test::LongString::Max>, or
-by specifying it as an argument to the C<use> directive :
-
-    use Test::LongString max => 100;
+It doesn't print the entire strings in the failure message.
 
 =item *
 
@@ -175,10 +206,56 @@ In the diagnostics, non-ASCII characters are escaped as C<\x{xx}>.
 
 =back
 
-The functions C<like_string()> and C<unlike_string()> are replacements for
-C<Test::More:like()> and C<unlike()>, that only print the beginning of the
-received string in the output. (I've no way to figure out the position where
-the regexp failed to match, if this has a sense.)
+For example:
+
+    is_string( $soliloquy, $juliet );
+
+    #     Failed test (soliloquy.t at line 15)
+    #          got: "To be, or not to be: that is the question:\x{0a}Whether"...
+    #       length: 1490
+    #     expected: "O Romeo, Romeo,\x{0a}wherefore art thou Romeo?\x{0a}Deny thy"...
+    #       length: 154
+    #     strings begin to differ at char 1
+
+=head2 like_string( $string, qr/regex/ [, $label ] )
+
+=head2 unlike_string( $string, qr/regex/ [, $label ] )
+
+C<like_string()> and C<unlike_string()> are replacements for
+C<Test::More:like()> and C<unlike()> that only print the beginning
+of the received string in the output.  Unfortunately, they can't
+print out the position where the regex failed to match.
+
+    like_string( $soliloquy, qr/Romeo|Juliet|Mercutio|Tybalt/ );
+
+    #     Failed test (soliloquy.t at line 15)
+    #          got: "To be, or not to be: that is the question:\x{0a}Whether"...
+    #       length: 1490
+    #     doesn't match '(?-xism:Romeo|Juliet|Mercutio|Tybalt)'
+    # Looks like you planned 4 tests but only ran 1.
+
+=head2 contains_string( $string, $substring [, $label ] )
+
+C<contains_string()> searches for I<$substring> in I<$string>.  It's
+the same as C<like_string()>, except that it's not a regular
+expression search.
+
+    contains_string( $soliloquy, "Romeo" );
+
+    #     Failed test (soliloquy.t at line 10)
+    #         searched: "To be, or not to be: that is the question:\x{0a}Whether"...
+    #   and can't find: "Romeo"
+    # Looks like you planned 4 tests but only ran 1.
+
+=head1 CONTROLLING OUTPUT
+
+By default, only the first 50 characters of the compared strings
+are shown in the failure message.  This value is in
+C<$Test::LongString::Max>, and can be set at run-time.
+
+You can also set it by specifying an argument to C<use>:
+
+    use Test::LongString max => 100;
 
 =head1 AUTHOR
 

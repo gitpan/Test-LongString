@@ -15,7 +15,7 @@ WriteMakefile(
 	'Test::Builder::Tester'	=> 0.09,
     },
     dist	    => {
-	PREOP	    => 'svn log > ${DISTVNAME}/Changes',
+	PREOP	    => 'svn log -r HEAD:1 > ${DISTVNAME}/Changes',
 	CI	    => 'svn commit',
 	RCS_LABEL   => '@ :',
     },

@@ -1,4 +1,4 @@
-Test::LongString v0.04
+Test::LongString v0.05
 ======================
 
 A library to test long strings.
@@ -15,6 +15,7 @@ To install this module type the following:
 DEPENDENCIES
 
 Needs Test::More, Test::Builder, and, to run the tests, Test::Builder::Tester.
+Test::Pod and Test::Pod::Coverage are optional.
 
 COPYRIGHT AND LICENCE
 
