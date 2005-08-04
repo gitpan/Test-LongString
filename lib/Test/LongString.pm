@@ -1,9 +1,9 @@
 package Test::LongString;
 
 use strict;
-use vars qw($VERSION @ISA @EXPORT $Max);
+use vars qw($VERSION @ISA @EXPORT $Max $Context);
 
-$VERSION = 0.07;
+$VERSION = 0.08;
 
 use Test::Builder;
 my $Tester = new Test::Builder();
@@ -15,6 +15,9 @@ use Exporter;
 # Maximum string length displayed in diagnostics
 $Max = 50;
 
+# Amount of context provided when starting displaying a string in the middle
+$Context = 10;
+
 sub import {
     (undef, my %args) = @_;
     $Max = $args{max} if defined $args{max};
@@ -22,14 +25,24 @@ sub import {
     goto &Exporter::import;
 }
 
-# Formats a string for display.
+# _display($string, [$offset = 0])
+# Formats a string for display. Begins at $offset minus $Context.
 # This function ought to be configurable, à la od(1).
 
 sub _display {
     my $s = shift;
     if (!defined $s) { return 'undef'; }
     if (length($s) > $Max) {
-	$s = sprintf(qq("%.${Max}s"...), $s);
+	my $offset = shift || 0;
+	if (defined $Context) {
+	    $offset -= $Context;
+	    $offset < 0 and $offset = 0;
+	}
+	else {
+	    $offset = 0;
+	}
+	$s = sprintf(qq("%.${Max}s"...), substr($s, $offset));
+	$s = "...$s" if $offset;
     }
     else {
 	$s = qq("$s");
@@ -43,8 +56,8 @@ sub _common_prefix_length {
     my ($x, $y) = (shift, shift);
     my $r = 0;
     while (length($x) && length($y)) {
-	my ($x1,$x2) = $x =~ /(.)(.*)/;
-	my ($y1,$y2) = $y =~ /(.)(.*)/;
+	my ($x1,$x2) = $x =~ /(.)(.*)/s;
+	my ($y1,$y2) = $y =~ /(.)(.*)/s;
 	if ($x1 eq $y1) {
 	    $x = $x2;
 	    $y = $y2;
@@ -128,13 +141,17 @@ DIAG
     }
     else {
 	$Tester->ok(0, $name);
-	my ($g, $e) = (_display($got), _display($expected));
+	my $common_prefix = _common_prefix_length($got,$expected);
+	my ($g, $e) = (
+	    _display($got, $common_prefix),
+	    _display($expected, $common_prefix),
+	);
 	$Tester->diag(<<DIAG);
          got: $g
       length: ${\(length $got)}
     expected: $e
       length: ${\(length $expected)}
-    strings begin to differ at char ${\(1+_common_prefix_length($got,$expected))}
+    strings begin to differ at char ${\($common_prefix + 1)}
 DIAG
 	return 0;
     }
@@ -293,6 +310,13 @@ C<$Test::LongString::Max>, and can be set at run-time.
 You can also set it by specifying an argument to C<use>:
 
     use Test::LongString max => 100;
+
+When the compared strings begin to differ after a large prefix,
+Test::LongString will not print them from the beginning, but will start at the
+middle, more precisely at C<$Test::LongString::Context> characters before the
+first difference. By default this value is 10 characters. If you want
+Test::LongString to always print the beginning of compared strings no matter
+where they differ, undefine C<$Test::LongString::Context>.
 
 =head1 AUTHOR
 

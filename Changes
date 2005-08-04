@@ -1,42 +1,30 @@
 ------------------------------------------------------------------------
-r15 | rafael | 2004-12-10 17:29:02 +0100 (ven, 10 déc 2004) | 1 line
+r13 | rafael | 2005-08-04 18:32:33 +0200 (jeu, 04 aoû 2005) | 1 line
 
-This is version 0.07. We're releasing often.
+This is 0.08
 ------------------------------------------------------------------------
-r14 | rafael | 2004-12-10 17:27:52 +0100 (ven, 10 déc 2004) | 2 lines
+r12 | rafael | 2005-08-04 18:30:07 +0200 (jeu, 04 aoû 2005) | 1 line
 
-Another patch from Andy Lester, this time to add the lacks_string() function.
-
+Add Changes in MANIFEST
 ------------------------------------------------------------------------
-r13 | rafael | 2004-12-10 16:04:38 +0100 (ven, 10 déc 2004) | 1 line
+r11 | rafael | 2005-08-04 18:27:52 +0200 (jeu, 04 aoû 2005) | 1 line
 
-This is 0.06
+Record changes
 ------------------------------------------------------------------------
-r12 | rafael | 2004-12-10 16:01:23 +0100 (ven, 10 déc 2004) | 2 lines
+r10 | rafael | 2005-08-04 02:35:38 +0200 (jeu, 04 aoû 2005) | 2 lines
 
-Require a more recent Test::Builder::Tester (RT #8404)
-
-------------------------------------------------------------------------
-r11 | rafael | 2004-12-10 16:00:09 +0100 (ven, 10 déc 2004) | 2 lines
-
-Standardify a makefile macro (RT #7644)
+Introduce $Context for better is_string() diagnostics
 
 ------------------------------------------------------------------------
-r10 | rafael | 2004-12-09 10:03:58 +0100 (jeu, 09 déc 2004) | 1 line
+r9 | rafael | 2005-08-04 02:14:28 +0200 (jeu, 04 aoû 2005) | 3 lines
 
-Fix Changes file generation
+Fix is_string() diagnostic with strings that begin to differ
+after the first \n
+
 ------------------------------------------------------------------------
-r9 | rafael | 2004-12-09 10:01:48 +0100 (jeu, 09 déc 2004) | 1 line
+r8 | rafael | 2005-02-07 18:39:13 +0100 (lun, 07 fév 2005) | 1 line
 
-Bump version number to 0.05
-------------------------------------------------------------------------
-r8 | rafael | 2004-12-09 09:59:13 +0100 (jeu, 09 déc 2004) | 5 lines
-
-Patch from Andy Lester:
-- add a new function contains_string
-- lots more doc
-- Test::Pod compliant
-
+Restore 0.07, previous history lost
 ------------------------------------------------------------------------
 r7 | rafael | 2004-11-04 16:51:48 +0100 (jeu, 04 nov 2004) | 1 line
 

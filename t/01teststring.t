@@ -2,7 +2,7 @@
 
 use strict;
 
-use Test::More tests => 7;
+use Test::More tests => 9;
 use Test::Builder::Tester;
 use Test::Builder::Tester::Color;
 
@@ -63,3 +63,39 @@ is_string(
     "spelling",
 );
 test_test("Escape high-ascii chars");
+
+test_out('not ok 1 - foo\nfoo is foo\nfoo');
+test_fail(6);
+test_diag(qq(         got: "foo\\x{0a}foo"
+#       length: 7
+#     expected: "foo\\x{0a}fpo"
+#       length: 7
+#     strings begin to differ at char 6));
+is_string("foo\nfoo", "foo\nfpo", 'foo\nfoo is foo\nfoo');
+test_test("Count correctly prefix with multiline strings");
+
+test_out("not ok 1 - this isn't Ulysses");
+test_fail(6);
+test_diag(qq(         got: ..."he bowl aloft and intoned:\\x{0a}--Introibo ad altare de"...
+#       length: 275
+#     expected: ..."he bowl alift and intoned:\\x{0a}--Introibo ad altare de"...
+#       length: 275
+#     strings begin to differ at char 233));
+is_string(
+    <<ULYS1,
+Stately, plump Buck Mulligan came from the stairhead, bearing a bowl of
+lather on which a mirror and a razor lay crossed. A yellow dressinggown,
+ungirdled, was sustained gently behind him by the mild morning air. He
+held the bowl aloft and intoned:
+--Introibo ad altare dei.
+ULYS1
+    <<ULYS2,
+Stately, plump Buck Mulligan came from the stairhead, bearing a bowl of
+lather on which a mirror and a razor lay crossed. A yellow dressinggown,
+ungirdled, was sustained gently behind him by the mild morning air. He
+held the bowl alift and intoned:
+--Introibo ad altare dei.
+ULYS2
+    "this isn't Ulysses",
+);
+test_test("Display offset in diagnostics");
