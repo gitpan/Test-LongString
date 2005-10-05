@@ -3,14 +3,15 @@ package Test::LongString;
 use strict;
 use vars qw($VERSION @ISA @EXPORT $Max $Context);
 
-$VERSION = 0.08;
+$VERSION = 0.09;
 
 use Test::Builder;
 my $Tester = new Test::Builder();
 
 use Exporter;
 @ISA    = ('Exporter');
-@EXPORT = qw( is_string like_string unlike_string contains_string lacks_string );
+@EXPORT = qw( is_string is_string_nows like_string unlike_string
+    contains_string lacks_string );
 
 # Maximum string length displayed in diagnostics
 $Max = 50;
@@ -157,6 +158,44 @@ DIAG
     }
 }
 
+sub is_string_nows ($$;$) {
+    my ($got, $expected, $name) = @_;
+    if (!defined $got || !defined $expected) {
+	my $ok = !defined $got && !defined $expected;
+	$Tester->ok($ok, $name);
+	if (!$ok) {
+	    my ($g, $e) = (_display($got), _display($expected));
+	    $Tester->diag(<<DIAG);
+         got: $g
+    expected: $e
+DIAG
+	}
+	return $ok;
+    }
+    s/\s+//g for (my $got_nows = $got), (my $expected_nows = $expected);
+    if ($got_nows eq $expected_nows) {
+	$Tester->ok(1, $name);
+	return 1;
+    }
+    else {
+	$Tester->ok(0, $name);
+	my $common_prefix = _common_prefix_length($got_nows,$expected_nows);
+	my ($g, $e) = (
+	    _display($got_nows, $common_prefix),
+	    _display($expected_nows, $common_prefix),
+	);
+	$Tester->diag(<<DIAG);
+after whitespace removal:
+         got: $g
+      length: ${\(length $got_nows)}
+    expected: $e
+      length: ${\(length $expected_nows)}
+    strings begin to differ at char ${\($common_prefix + 1)}
+DIAG
+	return 0;
+    }
+}
+
 sub like_string ($$;$) {
     _like($_[0],$_[1],'=~',$_[2]);
 }
@@ -260,6 +299,11 @@ For example:
     #       length: 154
     #     strings begin to differ at char 1
 
+=head2 is_string_nows( $string, $expected [, $label ] )
+
+Like C<is_string()>, but removes whitepace (in the C<\s> sense) from the
+arguments before comparing them.
+
 =head2 like_string( $string, qr/regex/ [, $label ] )
 
 =head2 unlike_string( $string, qr/regex/ [, $label ] )
@@ -321,7 +365,7 @@ where they differ, undefine C<$Test::LongString::Context>.
 =head1 AUTHOR
 
 Written by Rafael Garcia-Suarez. Thanks to Mark Fowler (and to Joss Whedon) for
-the inspirational L<Acme::Test::Buffy>.
+the inspirational L<Acme::Test::Buffy>. Thanks to Andy Lester for lots of patches.
 
 This program is free software; you may redistribute it and/or modify it under
 the same terms as Perl itself.

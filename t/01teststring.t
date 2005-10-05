@@ -2,7 +2,7 @@
 
 use strict;
 
-use Test::More tests => 9;
+use Test::More tests => 11;
 use Test::Builder::Tester;
 use Test::Builder::Tester::Color;
 
@@ -99,3 +99,26 @@ ULYS2
     "this isn't Ulysses",
 );
 test_test("Display offset in diagnostics");
+
+test_out("ok 1 - looks like Finnegans Wake");
+is_string_nows(
+    <<FW1,
+riverrun, past Eve and Adam's, from swerve of shore to bend
+of bay, brings us by a commodius vicus of recirculation back to
+Howth Castle and Environs.
+FW1
+    qq(riverrun,pastEveandAdam's,fromswerveofshoretobendofbay,bringsusbyacommodiusvicusofrecirculationbacktoHowthCastleandEnvirons.),
+    "looks like Finnegans Wake",
+);
+test_test("is_string_nows removes whitespace");
+
+test_out("not ok 1 - non-ws differs");
+test_fail(7);
+test_diag(qq(after whitespace removal:
+#          got: "abc"
+#       length: 3
+#     expected: "abd"
+#       length: 3
+#     strings begin to differ at char 3));
+is_string_nows("a b c", "abd", "non-ws differs");
+test_test("is_string_nows tests correctly");
