@@ -3,7 +3,7 @@ package Test::LongString;
 use strict;
 use vars qw($VERSION @ISA @EXPORT $Max $Context $EOL $LCSS);
 
-$VERSION = '0.15';
+$VERSION = '0.16';
 
 use Test::Builder;
 my $Tester = new Test::Builder();
@@ -62,7 +62,7 @@ sub _display {
 
 sub _common_prefix_length {
     my ($str1, $str2) = @_;
-    my $diff = $str1 ^ $str2;
+    my $diff = "$str1" ^ "$str2";
     my ($pre) = $diff =~ /^(\000*)/;
     return length $pre;
 }
@@ -364,7 +364,7 @@ For example:
 
 =head2 is_string_nows( $string, $expected [, $label ] )
 
-Like C<is_string()>, but removes whitepace (in the C<\s> sense) from the
+Like C<is_string()>, but removes whitespace (in the C<\s> sense) from the
 arguments before comparing them.
 
 =head2 like_string( $string, qr/regex/ [, $label ] )
@@ -443,7 +443,7 @@ Test::LongString to always print the beginning of compared strings no matter
 where they differ, undefine C<$Test::LongString::Context>.
 
 When computing line numbers this module uses "\n" to count line endings. This
-may not be appropriate for strings on your platform, and can be overriden
+may not be appropriate for strings on your platform, and can be overridden
 by setting the C<$Test::LongString::EOL> variable to a suitable regular
 expression (either a reference to a regular expression or a string that
 can be interpolated into a regular expression.)
@@ -463,6 +463,10 @@ the same terms as Perl itself.
 A git repository for this module is available at
 
     git://github.com/rgs/Test-LongString.git
+
+and the project page at
+
+    http://github.com/rgs/Test-LongString
 
 =head1 SEE ALSO
 
